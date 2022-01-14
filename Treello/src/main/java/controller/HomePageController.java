@@ -3,11 +3,18 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
 import FranV.Treello.App;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -20,6 +27,8 @@ import javafx.scene.control.Accordion;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
@@ -37,6 +46,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import model.Priorita;
 import model.Progetto;
 import model.Sezione;
 import model.Task;
@@ -75,7 +86,7 @@ public class HomePageController implements Initializable {
 
 	@FXML
 	private HBox hboxSezione;
-
+	
 	@FXML
 	private void newProjectButton() throws IOException, SQLException {
 		int nPro = pDao.getUserProjects().size() + 1;
@@ -83,7 +94,6 @@ public class HomePageController implements Initializable {
 		dialog.setTitle("Aggiunta Progetti");
 		dialog.setHeaderText("Aggiungi Progetto");
 		dialog.setContentText("Inserire nome progetto:");
-
 		// Traditional way to get the response value.
 		Optional<String> result = dialog.showAndWait();
 		if (result.isPresent()) {
@@ -101,9 +111,10 @@ public class HomePageController implements Initializable {
 
 	public void projectR() throws SQLException {
 		TextInputDialog dialog = new TextInputDialog();
-		dialog.setTitle("Rinominazione Progetti");
+		
+		/*dialog.setTitle("Rinominazione Progetti");
 		dialog.setHeaderText("Rinomina Progetto");
-		dialog.setContentText("Inserire nome progetto:");
+		dialog.setContentText("Inserire nome progetto:");*/
 		// Traditional way to get the response value.
 		Optional<String> result = dialog.showAndWait();
 		if (result.isPresent()) {
@@ -179,6 +190,30 @@ public class HomePageController implements Initializable {
 				BorderPane bTask = new BorderPane();
 				tP.setText(task.getNome());
 				tP.setId(Integer.toString(task.getId()));
+				bTask.setBottom(new Label(task.getData()));
+				ComboBox<Priorita> priorita = comboBoxPriorita(task);
+				VBox vbox=new VBox();
+				vbox.getChildren().add(new Label("Priorità"));
+				vbox.getChildren().add(priorita);
+				bTask.setTop(vbox);
+				CheckBox completata = new CheckBox("Completata");
+				completata.setSelected(task.getCompletata());
+				completata.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
+					@Override
+					public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+							Boolean newValue) {
+						try {
+							tDao.updateCompletata(task.getId(),newValue);
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+				});
+				//bTask.setLeft();
+				bTask.setCenter(completata);
 				tP.setContent(bTask);
 				aC.getPanes().add(tP);
 			}
@@ -186,6 +221,7 @@ public class HomePageController implements Initializable {
 			/*
 			 * Node arrow = nuovoTask.lookup(".arrow"); arrow.setVisible(false);
 			 */
+			System.out.println("§§§§§§§§§§§§§§§ "+s.getId());
 			nuovoTask.setId(Integer.toString(s.getId()));
 			nuovoTask.setOnMouseClicked(aggiungiTask);
 			aC.getPanes().add(nuovoTask);
@@ -198,6 +234,37 @@ public class HomePageController implements Initializable {
 		aggiungiSezione.setId(projectId);
 		hboxSezione.getChildren().add(aggiungiSezione);
 		aggiungiSezione.setOnMouseClicked(aggiungiSex);
+	}
+
+	private ComboBox<Priorita> comboBoxPriorita(Task task) {
+		ObservableList<Priorita> options =FXCollections.observableArrayList(
+				new Priorita("Bassa",-1),new Priorita("Normale",0),new Priorita("Alta",1),new Priorita("Massima",2));
+		ComboBox<Priorita> priorita = new ComboBox<Priorita>(options);		
+		priorita.valueProperty().addListener((obs, oldVal, newVal)->
+				{
+					try {
+						tDao.updatePriorita(task.getId(),newVal.getnPriorita());
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				});
+		priorita.setConverter(new StringConverter<Priorita>() {
+			
+			@Override
+			public String toString(Priorita object) {
+				if(object!=null)
+					return object.getP();
+				return null;
+			}
+			
+			@Override
+			public Priorita fromString(String string) {
+				return null;
+			}
+		});
+		priorita.getSelectionModel().select(task.getPriorita()+1);
+		return priorita;
 	}
 
 	EventHandler<ActionEvent> modS = new EventHandler<ActionEvent>() {
@@ -313,8 +380,9 @@ public class HomePageController implements Initializable {
 			dialog.setContentText("Inserire nome Task:");
 			Optional<String> result = dialog.showAndWait();
 			Node t = (Node) event.getTarget();
+			System.out.println("++++++++++++++ "+t.getParent().getId()+" -- "+t.getId());
 			if (result.isPresent()) {
-				try {
+				try {										
 					tDao.save(result.get(), Integer.parseInt(t.getParent().getId()));
 				} catch (NumberFormatException | SQLException e) {
 					e.printStackTrace();

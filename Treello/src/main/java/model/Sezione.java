@@ -2,11 +2,18 @@ package model;
 
 public class Sezione {
 	
+	public int getCompletata() {
+		return completata;
+	}
+	public void setCompletata(int completata) {
+		this.completata = completata;
+	}
 	public int getId() {
 		return id;
 	}
-	public Sezione(int id, String nome, Progetto progetto) {
+	public Sezione(int id, String nome, Progetto progetto,int completata) {
 		super();
+		this.completata = completata;
 		this.id = id;
 		this.nome = nome;
 		this.progetto = progetto;
@@ -29,5 +36,6 @@ public class Sezione {
 	private int id;
 	private String nome;
 	private Progetto progetto;
+	private int completata;
 
 }

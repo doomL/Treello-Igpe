@@ -41,9 +41,32 @@ public class Progetto {
 	public void setUtenti(List<Utente> utenti) {
 		this.utenti = utenti;
 	}
+	public int getCompletato() {
+		return completato;
+	}
+	public void setCompletato(int completato) {
+		this.completato = completato;
+	}
+	public String getSfondo() {
+		return sfondo;
+	}
+	public void setSfondo(String sfondo) {
+		this.sfondo = sfondo;
+	}
 	private int id;
 	private String nome;
 	private Utente utente;
 	private List<Utente> utenti;
+	private int completato;
+	private String sfondo;
+	
+	public Progetto(int id, String nome, Utente utente, int completato, String sfondo) {
+		super();
+		this.id = id;
+		this.nome = nome;
+		this.utente = utente;
+		this.completato = completato;
+		this.sfondo = sfondo;
+	}
 
 }

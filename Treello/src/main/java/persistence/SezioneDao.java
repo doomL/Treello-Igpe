@@ -12,7 +12,7 @@ import model.Progetto;
 import model.Sezione;
 
 public class SezioneDao {
-
+	
 	Connection con = DbManager.con;
 
 	public List<Sezione> getSezioniProgetto(String id) throws SQLException {
@@ -25,7 +25,7 @@ public class SezioneDao {
 		Progetto p = pDao.getProgettoFromId(Integer.parseInt(id));
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			SezioniList.add(new Sezione(rs.getInt("Id"), rs.getString("Nome"), p));
+			SezioniList.add(new Sezione(rs.getInt("Id"), rs.getString("Nome"), p,rs.getInt("Completata")));
 		}
 		return SezioniList;
 	}
@@ -47,7 +47,7 @@ public class SezioneDao {
 		stmt.setInt(1, id);
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			return new Sezione(rs.getInt("Id"), rs.getString("Nome"),App.getCurrentProgetto());
+			return new Sezione(rs.getInt("Id"), rs.getString("Nome"),App.getCurrentProgetto(),rs.getInt("Completata"));
 		}
 		return null;
 	}

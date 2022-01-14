@@ -33,7 +33,7 @@ public class ProgettoDao {
 		stmt.setString(1, App.getCurrentUser().getUsername());
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			projectsList.add(new Progetto(rs.getInt("Id"),rs.getString("Nome"),App.getCurrentUser()));
+			projectsList.add(new Progetto(rs.getInt("Id"),rs.getString("Nome"),App.getCurrentUser(),rs.getInt("Completato"),rs.getString("Sfondo")));
 		}
 		stmt.close();
 		return projectsList;
@@ -47,7 +47,7 @@ public class ProgettoDao {
 		Progetto p;
 		ResultSet rs = stmt.executeQuery();
 		while (rs.next()) {
-			p = new Progetto(rs.getInt("Id"),rs.getString("Nome"),App.getCurrentUser());
+			p = new Progetto(rs.getInt("Id"),rs.getString("Nome"),App.getCurrentUser(),rs.getInt("Completato"),rs.getString("Sfondo"));
 			App.setCurrentProgetto(p);
 			stmt.close();
 			return p;
