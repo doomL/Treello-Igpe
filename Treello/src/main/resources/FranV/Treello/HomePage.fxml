@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.media.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="733.0" prefWidth="1048.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.HomePageController">
+   <children>
+      <MenuBar>
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <SplitPane dividerPositions="0.29797979797979796" prefHeight="1.0E17" prefWidth="1.0E17">
+        <items>
+          <AnchorPane SplitPane.resizableWithParent="false">
+               <children>
+                  <SplitPane dividerPositions="0.15428571428571428" layoutX="74.0" layoutY="157.0" orientation="VERTICAL" prefHeight="702.0" prefWidth="308.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <Button fx:id="newProject" layoutX="121.0" layoutY="37.0" mnemonicParsing="false" onMouseClicked="#newProjectButton" prefHeight="104.0" prefWidth="306.0" text="➕ Nuovo Progetto" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" />
+                           </children>
+                        </AnchorPane>
+                      <AnchorPane fx:id="anchorPaneParent" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <ScrollPane fx:id="scrollProjects" prefHeight="588.0" prefViewportHeight="200.0" prefViewportWidth="100.0" prefWidth="306.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <content>
+                                    <AnchorPane>
+                                       <children>
+                                          <VBox fx:id="anchorProjects" minHeight="-Infinity" minWidth="-Infinity" spacing="5.0" />
+                                       </children>
+                                    </AnchorPane>
+                                 </content>
+                              </ScrollPane>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+               </children>
+            </AnchorPane>
+          <AnchorPane fx:id="anchorSezioni">
+               <children>
+                  <BorderPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <left>
+                        <Label fx:id="projectTitle" alignment="CENTER" contentDisplay="CENTER" text="Progetto" BorderPane.alignment="CENTER">
+                           <font>
+                              <Font name="Gill Sans Nova Cond XBd Italic" size="40.0" />
+                           </font>
+                           <BorderPane.margin>
+                              <Insets left="40.0" />
+                           </BorderPane.margin>
+                        </Label>
+                     </left>
+                     <bottom>
+                        <Separator prefHeight="11.0" prefWidth="730.0" BorderPane.alignment="CENTER" />
+                     </bottom>
+                     <right>
+                        <ProgressIndicator progress="0.0" BorderPane.alignment="CENTER">
+                           <BorderPane.margin>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </BorderPane.margin>
+                        </ProgressIndicator>
+                     </right>
+                     <center>
+                        <SplitMenuButton fx:id="projectOption" mnemonicParsing="false" text="Opzioni" BorderPane.alignment="CENTER">
+                          <items>
+                            <MenuItem fx:id="projectRename" mnemonicParsing="false" onAction="#projectR" text="Modifica" />
+                            <MenuItem fx:id="projectDelete" mnemonicParsing="false" onAction="#projectD" text="Elimina" />
+                          </items>
+                        </SplitMenuButton>
+                     </center>
+                  </BorderPane>
+                  <ScrollPane layoutX="14.0" layoutY="79.0" prefHeight="623.0" prefViewportHeight="212.0" prefViewportWidth="404.0" prefWidth="706.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="79.0">
+                     <content>
+                        <HBox fx:id="hboxSezione" layoutX="14.0" layoutY="79.0" spacing="35.0" AnchorPane.bottomAnchor="411.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="312.0" AnchorPane.topAnchor="79.0">
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </HBox>
+                     </content>
+                  </ScrollPane>
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</VBox>
