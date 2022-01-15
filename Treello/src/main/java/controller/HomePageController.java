@@ -3,9 +3,6 @@ package controller;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -13,32 +10,13 @@ import java.util.ResourceBundle;
 import FranV.Treello.App;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Accordion;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuButton;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.SplitMenuButton;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.TitledPane;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -46,7 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 import model.Priorita;
 import model.Progetto;
 import model.Sezione;
@@ -54,11 +31,25 @@ import model.Task;
 import persistence.ProgettoDao;
 import persistence.SezioneDao;
 import persistence.TaskDao;
+import util.DialogMaker;
+import util.PriorityComboBox;
 
+/*TODO
+Modifica Sezione
+Eliminare Task Quando si elimina sezione
+Elimina/Modifica Task
+Cambiare Sfondo
+Sbarrare Task Completati
+Cambiare colore Task Priorità
+Percentuale Completamento Progetto
+Competamento Sezione Colorare Di Verde
+Completamento Progetto Colorare Di Verde
+*/
 
 public class HomePageController implements Initializable {
 
 	final Stage dialog = new Stage();
+	private final PriorityComboBox priorityComboBox = new PriorityComboBox();
 
 	ProgettoDao pDao = new ProgettoDao();
 
@@ -66,18 +57,12 @@ public class HomePageController implements Initializable {
 
 	TaskDao tDao = new TaskDao();
 
-	Integer currentSectionId;
-	
-	@FXML
-	private ScrollPane scrollProjects;
 	@FXML
 	private VBox anchorProjects;
 
 	@FXML
 	private AnchorPane anchorPaneParent;
 
-	@FXML
-	private ScrollPane scrollSezioni;
 	@FXML
 	private AnchorPane anchorSezioni;
 
@@ -86,65 +71,45 @@ public class HomePageController implements Initializable {
 
 	@FXML
 	private HBox hboxSezione;
-	
+
 	@FXML
 	private void newProjectButton() throws IOException, SQLException {
 		int nPro = pDao.getUserProjects().size() + 1;
-		TextInputDialog dialog = new TextInputDialog("Progetto " + nPro);
-		dialog.setTitle("Aggiunta Progetti");
-		dialog.setHeaderText("Aggiungi Progetto");
-		dialog.setContentText("Inserire nome progetto:");
-		// Traditional way to get the response value.
-		Optional<String> result = dialog.showAndWait();
+		Optional<String> result = DialogMaker.createDialog("Progetto " + nPro,"Aggiunta Progetti","Aggiungi Progetto","Inserire nome progetto:");
 		if (result.isPresent()) {
 			System.out.println("Entrato");
 			System.out.println(result.get());
 			pDao.save(result.get());
-			Alert a = new Alert(AlertType.INFORMATION);
-			// set content text
-			a.setContentText("Progetto Creato con successo!");
-			a.show();
-			System.out.println("Salva");
+			DialogMaker.informationAlert("Progetto Creato con successo!");
 			loadProjectsFromDb();
 		}
 	}
 
+
+
 	public void projectR() throws SQLException {
-		TextInputDialog dialog = new TextInputDialog();
-		
-		/*dialog.setTitle("Rinominazione Progetti");
-		dialog.setHeaderText("Rinomina Progetto");
-		dialog.setContentText("Inserire nome progetto:");*/
-		// Traditional way to get the response value.
-		Optional<String> result = dialog.showAndWait();
+		Optional<String> result = DialogMaker.textInputDialog("Rinominazione Progetti", "Rinomina Progetto", "Inserire nome progetto:");
 		if (result.isPresent()) {
 			System.out.println("Entrato");
 			System.out.println(result.get());
 			pDao.update(result.get());
-			Alert a = new Alert(AlertType.INFORMATION);
-			a.setContentText("Progetto Rinominato con successo!");
-			a.show();
-			System.out.println("Salva");
+			DialogMaker.informationAlert("Progetto Rinominato con successo!");
 			anchorSezioni.setVisible(false);
 			loadProjectsFromDb();
 		}
 
 	}
 
+
+
+
 	public void projectD() throws SQLException {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setTitle("Eliminazione Progetti");
-		alert.setHeaderText("Elimina Progetto");
-		alert.setContentText("Sei sicuro ?");
-		Optional<ButtonType> result = alert.showAndWait();
+		Optional<ButtonType> result = DialogMaker.createDeleteAlert("Eliminazione Progetti", "Elimina Progetto");
 		if (result.get() == ButtonType.OK) {
 			System.out.println("Entrato");
 			System.out.println(result.get());
 			pDao.delete();
-			Alert a = new Alert(AlertType.INFORMATION);
-			a.setContentText("Progetto Eliminato con successo!");
-			a.show();
-			System.out.println("Salva");
+			DialogMaker.informationAlert("Progetto Eliminato con successo!");
 			anchorSezioni.setVisible(false);
 			loadProjectsFromDb();
 		}
@@ -170,7 +135,6 @@ public class HomePageController implements Initializable {
 		List<Sezione> sezioni = sDao.getSezioniProgetto(projectId);
 		projectTitle.setText(App.getCurrentProgetto().getNome());
 		for (Sezione s : sezioni) {
-			List<Task> tasks = tDao.getTaskSezione(s); 
 			BorderPane bP = new BorderPane();
 			MenuButton mB = new MenuButton();
 			Accordion aC = new Accordion();
@@ -185,38 +149,7 @@ public class HomePageController implements Initializable {
 			mB.getItems().add(modificaS);
 			// mB.setFont(new Font("Constantia", 20.0));
 			mB.setId(Integer.toString(s.getId()));
-			for (Task task : tasks) {
-				TitledPane tP = new TitledPane();
-				BorderPane bTask = new BorderPane();
-				tP.setText(task.getNome());
-				tP.setId(Integer.toString(task.getId()));
-				bTask.setBottom(new Label(task.getData()));
-				ComboBox<Priorita> priorita = comboBoxPriorita(task);
-				VBox vbox=new VBox();
-				vbox.getChildren().add(new Label("Priorità"));
-				vbox.getChildren().add(priorita);
-				bTask.setTop(vbox);
-				CheckBox completata = new CheckBox("Completata");
-				completata.setSelected(task.getCompletata());
-				completata.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-					@Override
-					public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-							Boolean newValue) {
-						try {
-							tDao.updateCompletata(task.getId(),newValue);
-						} catch (SQLException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-					
-				});
-				//bTask.setLeft();
-				bTask.setCenter(completata);
-				tP.setContent(bTask);
-				aC.getPanes().add(tP);
-			}
+			loadTasks(tDao.getTaskSezione(s), aC);
 			TitledPane nuovoTask = new TitledPane("➕ Nuovo task", null);
 			/*
 			 * Node arrow = nuovoTask.lookup(".arrow"); arrow.setVisible(false);
@@ -236,54 +169,62 @@ public class HomePageController implements Initializable {
 		aggiungiSezione.setOnMouseClicked(aggiungiSex);
 	}
 
-	private ComboBox<Priorita> comboBoxPriorita(Task task) {
-		ObservableList<Priorita> options =FXCollections.observableArrayList(
-				new Priorita("Bassa",-1),new Priorita("Normale",0),new Priorita("Alta",1),new Priorita("Massima",2));
-		ComboBox<Priorita> priorita = new ComboBox<Priorita>(options);		
-		priorita.valueProperty().addListener((obs, oldVal, newVal)->
-				{
-					try {
-						tDao.updatePriorita(task.getId(),newVal.getnPriorita());
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				});
-		priorita.setConverter(new StringConverter<Priorita>() {
-			
+	private void loadTasks(List<Task> tasks, Accordion aC) {
+		for (Task task : tasks) {
+			TitledPane tP = new TitledPane();
+			BorderPane bTask = new BorderPane();
+			tP.setText(task.getNome());
+			tP.setId(Integer.toString(task.getId()));
+			bTask.setBottom(new Label(task.getData()));
+			ComboBox<Priorita> priorita = priorityComboBox.comboBoxPriorita(task);
+			VBox vbox=new VBox();
+			vbox.getChildren().add(new Label("Priorità"));
+			vbox.getChildren().add(priorita);
+			bTask.setTop(vbox);
+			CheckBox completata = new CheckBox("Completata");
+			completata.setSelected(task.getCompletata());
+			taskCompletataListener(task, completata);
+			//bTask.setLeft();
+			bTask.setCenter(completata);
+			tP.setContent(bTask);
+			aC.getPanes().add(tP);
+		}
+	}
+
+	private void taskCompletataListener(Task task, CheckBox completata) {
+		completata.selectedProperty().addListener(new ChangeListener<Boolean>() {
+
 			@Override
-			public String toString(Priorita object) {
-				if(object!=null)
-					return object.getP();
-				return null;
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
+					Boolean newValue) {
+				try {
+					tDao.updateCompletata(task.getId(),newValue);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
-			
-			@Override
-			public Priorita fromString(String string) {
-				return null;
-			}
+
 		});
-		priorita.getSelectionModel().select(task.getPriorita()+1);
-		return priorita;
+	}
+
+	private ComboBox<Priorita> comboBoxPriorita(Task task) {
+		return util.PriorityComboBox.comboBoxPriorita(task);
 	}
 
 	EventHandler<ActionEvent> modS = new EventHandler<ActionEvent>() {
 		@Override
 		public void handle(ActionEvent event) {
-	
-			
+
+
 			}
 	};
-	
+
 	EventHandler<ActionEvent> eliS = new EventHandler<ActionEvent>() {
 		@Override
 		public void handle(ActionEvent event) {
 			MenuItem n = (MenuItem) event.getTarget();
-			Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("Eliminazione Sezione");
-			alert.setHeaderText("Elimina Sezione");
-			alert.setContentText("Sei sicuro ?");
-			Optional<ButtonType> result = alert.showAndWait();
+			Optional<ButtonType> result = DialogMaker.createDeleteAlert("Eliminazione Sezione", "Elimina Sezione");
 			if (result.get() == ButtonType.OK) {
 				System.out.println("Entrato");
 				System.out.println(result.get());
@@ -292,10 +233,7 @@ public class HomePageController implements Initializable {
 				} catch (NumberFormatException | SQLException e) {
 					e.printStackTrace();
 				}
-				Alert a = new Alert(AlertType.INFORMATION);
-				a.setContentText("Sezione Eliminata con successo!");
-				a.show();
-				System.out.println("Salva");
+				DialogMaker.informationAlert("Sezione Eliminata con successo!");
 				hboxSezione.getChildren().clear();
 				try {
 					loadSezioni(Integer.toString(App.getCurrentProgetto().getId()));
@@ -303,10 +241,12 @@ public class HomePageController implements Initializable {
 					e.printStackTrace();
 				}
 			}
-			
+
 			}
-	};		
-	
+	};
+
+
+
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -341,11 +281,7 @@ public class HomePageController implements Initializable {
 	EventHandler<MouseEvent> aggiungiSex = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent event) {
-			TextInputDialog dialog = new TextInputDialog();
-			dialog.setTitle("Aggiunta Sezioni");
-			dialog.setHeaderText("Aggiungi Sezione");
-			dialog.setContentText("Inserire nome Sezione:");
-			Optional<String> result = dialog.showAndWait();
+			Optional<String> result = DialogMaker.textInputDialog("Aggiunta Sezioni", "Aggiungi Sezione", "Inserire nome Sezione:");
 			Node t = (Node) event.getTarget();
 			if (result.isPresent()) {
 				try {
@@ -353,55 +289,44 @@ public class HomePageController implements Initializable {
 				} catch (NumberFormatException | SQLException e) {
 					e.printStackTrace();
 				}
-				Alert a = new Alert(AlertType.INFORMATION);
-				// set content text
-				a.setContentText("Sezione Creato con successo!");
-				a.show();
-				System.out.println("Salva");
-				System.out.println("Aggiungi Sezione");
+				DialogMaker.informationAlert("Sezione Creata con successo!");
 				hboxSezione.getChildren().clear();
 				try {
 					loadSezioni(Integer.toString(App.getCurrentProgetto().getId()));
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				
+
 			}
 		}
 
 	};
-		
+
 	EventHandler<MouseEvent> aggiungiTask = new EventHandler<MouseEvent>() {
 		@Override
 		public void handle(MouseEvent event) {
-			TextInputDialog dialog = new TextInputDialog();
-			dialog.setTitle("Aggiunta Task");
-			dialog.setHeaderText("Aggiungi Task");
-			dialog.setContentText("Inserire nome Task:");
-			Optional<String> result = dialog.showAndWait();
-			Node t = (Node) event.getTarget();
+			Optional<String> result = DialogMaker.textInputDialog("Aggiunta Task", "Aggiungi Task", "Inserire nome Task:");
+			Node t = (Node) event.getSource();
 			System.out.println("++++++++++++++ "+t.getParent().getId()+" -- "+t.getId());
 			if (result.isPresent()) {
-				try {										
-					tDao.save(result.get(), Integer.parseInt(t.getParent().getId()));
+				try {
+					tDao.save(result.get(), Integer.parseInt(t.getId()));
 				} catch (NumberFormatException | SQLException e) {
 					e.printStackTrace();
 				}
-				Alert a = new Alert(AlertType.INFORMATION);
-				// set content text
-				a.setContentText("Task Creato con successo!");
-				a.show();
-				System.out.println("Salva");
-				System.out.println("Aggiungi Task");
+				DialogMaker.informationAlert("Task Creato con successo!");
 				hboxSezione.getChildren().clear();
 				try {
 					loadSezioni(Integer.toString(App.getCurrentProgetto().getId()));
 				} catch (SQLException e) {
 					e.printStackTrace();
 				}
-				
+
 			}
 		}
 
 	};
+
 }
+
+
