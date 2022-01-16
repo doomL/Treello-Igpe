@@ -17,12 +17,11 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.Priorita;
 import model.Progetto;
@@ -34,16 +33,12 @@ import persistence.TaskDao;
 import util.DialogMaker;
 import util.PriorityComboBox;
 
+import javax.xml.crypto.Data;
+
 /*TODO
-Modifica Sezione
-Eliminare Task Quando si elimina sezione
-Elimina/Modifica Task
-Cambiare Sfondo
 Sbarrare Task Completati
-Cambiare colore Task Priorità
-Percentuale Completamento Progetto
 Competamento Sezione Colorare Di Verde
-Completamento Progetto Colorare Di Verde
+Cambiare Sfondo
 */
 
 public class HomePageController implements Initializable {
@@ -71,6 +66,10 @@ public class HomePageController implements Initializable {
 
 	@FXML
 	private HBox hboxSezione;
+	@FXML
+	private ProgressIndicator progressIndicator;
+	@FXML
+	private ScrollPane scrollSezione;
 
 	@FXML
 	private void newProjectButton() throws IOException, SQLException {
@@ -118,7 +117,7 @@ public class HomePageController implements Initializable {
 	EventHandler<ActionEvent> eH = new EventHandler<ActionEvent>() {
 		@Override
 		public void handle(ActionEvent event) {
-			SplitMenuButton button = (SplitMenuButton) event.getTarget();
+			Button button = (Button) event.getTarget();
 			hboxSezione.getChildren().clear();
 			anchorSezioni.setVisible(true);
 			System.out.println("Hello World! " + button.getId());
@@ -131,9 +130,14 @@ public class HomePageController implements Initializable {
 		}
 
 	};
+	Double contTot=0.0;
+	Double max=0.0;
 	private void loadSezioni(String projectId) throws SQLException {
+
 		List<Sezione> sezioni = sDao.getSezioniProgetto(projectId);
 		projectTitle.setText(App.getCurrentProgetto().getNome());
+		contTot=0.0;
+		max=0.0;
 		for (Sezione s : sezioni) {
 			BorderPane bP = new BorderPane();
 			MenuButton mB = new MenuButton();
@@ -144,16 +148,16 @@ public class HomePageController implements Initializable {
 			eliminaS.setId(Integer.toString(s.getId()));
 			eliminaS.setOnAction(eliS);
 			MenuItem modificaS = new MenuItem("Modifica Sezione");
-			//modificaS.setOnAction(modS());
+			modificaS.setId(Integer.toString(s.getId()));
+			modificaS.setOnAction(modS);
 			mB.getItems().add(eliminaS);
 			mB.getItems().add(modificaS);
 			// mB.setFont(new Font("Constantia", 20.0));
 			mB.setId(Integer.toString(s.getId()));
-			loadTasks(tDao.getTaskSezione(s), aC);
+			List<Task> tasks=tDao.getTaskSezione(s);
+			contTot+=loadTasks(tasks, aC);
+			max+=tasks.size();
 			TitledPane nuovoTask = new TitledPane("➕ Nuovo task", null);
-			/*
-			 * Node arrow = nuovoTask.lookup(".arrow"); arrow.setVisible(false);
-			 */
 			System.out.println("§§§§§§§§§§§§§§§ "+s.getId());
 			nuovoTask.setId(Integer.toString(s.getId()));
 			nuovoTask.setOnMouseClicked(aggiungiTask);
@@ -162,6 +166,8 @@ public class HomePageController implements Initializable {
 			bP.setCenter(aC);
 			hboxSezione.getChildren().add(bP);
 		}
+		progressChanger(contTot, max);
+
 		Button aggiungiSezione = new Button();
 		aggiungiSezione.setText("➕ Nuova Sezione");
 		aggiungiSezione.setId(projectId);
@@ -169,25 +175,75 @@ public class HomePageController implements Initializable {
 		aggiungiSezione.setOnMouseClicked(aggiungiSex);
 	}
 
-	private void loadTasks(List<Task> tasks, Accordion aC) {
+	private void progressChanger(Double contTot, Double max) {
+		if(contTot !=0)
+			progressIndicator.setProgress(contTot / max);
+		else
+			progressIndicator.setProgress(0.0);
+		if(contTot/max==1)
+			anchorProjects.lookup("#"+App.getCurrentProgetto().getId()).setStyle("-fx-base: green");
+		else
+			anchorProjects.lookup("#"+App.getCurrentProgetto().getId()).setStyle(null);
+	}
+
+	private int loadTasks(List<Task> tasks, Accordion aC) {
+		int cont=0;
 		for (Task task : tasks) {
 			TitledPane tP = new TitledPane();
 			BorderPane bTask = new BorderPane();
+			//TODO Task Completata Strikethorugh
+			//Text taskName=new Text(task.getNome());
+			//taskName.setStrikethrough(true);
 			tP.setText(task.getNome());
+			tP.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20));
+			if(task.getCompletata())
+
+			tP.setStyle(".text -fx-strikethrough: true;");
 			tP.setId(Integer.toString(task.getId()));
-			bTask.setBottom(new Label(task.getData()));
-			ComboBox<Priorita> priorita = priorityComboBox.comboBoxPriorita(task);
+
+			VBox dataCreazione=new VBox();
+			dataCreazione.getChildren().add(new Label("Data Creazione"));
+			dataCreazione.getChildren().add(new Label(task.getData()));
+			bTask.setBottom(dataCreazione);
+
+			setPrioriotaColor(task.getPriorita(), tP);
+			ComboBox<Priorita> priorita = priorityComboBox.comboBoxPriorita(task,tP);
 			VBox vbox=new VBox();
 			vbox.getChildren().add(new Label("Priorità"));
 			vbox.getChildren().add(priorita);
 			bTask.setTop(vbox);
+
 			CheckBox completata = new CheckBox("Completata");
 			completata.setSelected(task.getCompletata());
 			taskCompletataListener(task, completata);
+			if(task.getCompletata())
+				cont++;
+
 			//bTask.setLeft();
 			bTask.setCenter(completata);
+			Button eliminaTask=new Button("X");
+			eliminaTask.setStyle("-fx-base: red");
+			eliminaTask.setId(Integer.toString(task.getId()));
+			eliminaTask.setOnMouseClicked(delTask);
+			bTask.setRight(eliminaTask);
 			tP.setContent(bTask);
 			aC.getPanes().add(tP);
+		}
+		return cont;
+	}
+
+	public static void setPrioriotaColor(int priorita, TitledPane tP) {
+		if(priorita==-1){
+			tP.setStyle("-fx-base: blue");
+		}
+		else if(priorita==0){
+			tP.setStyle("-fx-base: green");
+		}
+		else if(priorita==1){
+			tP.setStyle("-fx-base: yellow");
+		}
+		else if(priorita==2){
+			tP.setStyle("-fx-base: red");
 		}
 	}
 
@@ -195,9 +251,13 @@ public class HomePageController implements Initializable {
 		completata.selectedProperty().addListener(new ChangeListener<Boolean>() {
 
 			@Override
-			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,
-					Boolean newValue) {
-				try {
+			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue,Boolean newValue) {
+				if(newValue)
+					progressChanger(++contTot, max);
+				else
+					progressChanger(--contTot, max);
+
+					try {
 					tDao.updateCompletata(task.getId(),newValue);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -208,14 +268,26 @@ public class HomePageController implements Initializable {
 		});
 	}
 
-	private ComboBox<Priorita> comboBoxPriorita(Task task) {
-		return util.PriorityComboBox.comboBoxPriorita(task);
+	private ComboBox<Priorita> comboBoxPriorita(Task task,TitledPane tP) {
+		return util.PriorityComboBox.comboBoxPriorita(task,tP);
 	}
 
 	EventHandler<ActionEvent> modS = new EventHandler<ActionEvent>() {
 		@Override
 		public void handle(ActionEvent event) {
-
+			Optional<String> result = DialogMaker.textInputDialog("Rinominazione Sezioni", "Rinomina Sezione", "Inserire nome Sezione:");
+			MenuItem t = (MenuItem) event.getTarget();
+			if (result.isPresent()) {
+				System.out.println("Entrato");
+				System.out.println(result.get());
+				try {
+					sDao.update(Integer.parseInt(t.getId()),result.get());
+					DialogMaker.informationAlert("Sezione Rinominata con successo!");
+					loadSezioni(Integer.toString(App.getCurrentProgetto().getId()));
+				} catch (SQLException throwables) {
+					throwables.printStackTrace();
+				}
+			}
 
 			}
 	};
@@ -244,6 +316,31 @@ public class HomePageController implements Initializable {
 
 			}
 	};
+	EventHandler<MouseEvent> delTask = new EventHandler<MouseEvent>() {
+		@Override
+		public void handle(MouseEvent event) {
+			System.out.println("EliminaTask");
+			Button n = (Button) event.getSource();
+			Optional<ButtonType> result = DialogMaker.createDeleteAlert("Eliminazione Task", "Elimina Task");
+			if (result.get() == ButtonType.OK) {
+				System.out.println("Entrato");
+				System.out.println(result.get());
+				try {
+					tDao.delete(Integer.parseInt(n.getId()));
+				} catch (NumberFormatException | SQLException e) {
+					e.printStackTrace();
+				}
+				DialogMaker.informationAlert("Task Eliminata con successo!");
+				hboxSezione.getChildren().clear();
+				try {
+					loadSezioni(Integer.toString(App.getCurrentProgetto().getId()));
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+	};
 
 
 
@@ -261,7 +358,7 @@ public class HomePageController implements Initializable {
 			List<Progetto> list = pDao.getUserProjects();
 			for (Progetto progetto : list) {
 				System.out.println(progetto.toString());
-				SplitMenuButton b = new SplitMenuButton();
+				Button b = new Button();
 				b.setText(progetto.getNome());
 //				b.setMaxWidth(anchorProjcts.getPrefWidth());
 				b.setMinHeight(50);
@@ -271,6 +368,10 @@ public class HomePageController implements Initializable {
 				anchorPaneParent.setRightAnchor(b, 0.0);
 //				System.out.println(b.getMinHeight() + " " + numProjects);
 //				b.setTranslateY(numProjects++ * b.getMinHeight());
+				//AnchorPane.setLeftAnchor(anchorProjects,20.0);
+				//AnchorPane.setRightAnchor(anchorProjects,20.0);
+				AnchorPane.setLeftAnchor(anchorPaneParent,20.0);
+				AnchorPane.setRightAnchor(anchorPaneParent,0.0);
 				anchorProjects.getChildren().add(b);
 			}
 		} catch (SQLException e) {

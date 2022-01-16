@@ -14,7 +14,7 @@ import model.Utente;
 public class ProgettoDao {
 
 	Connection con=DbManager.con;
-	
+
 	public void save(String projectName) throws SQLException {
 		if (con == null || con.isClosed())
 			return;
@@ -24,7 +24,7 @@ public class ProgettoDao {
 		stmt.executeUpdate();
 		stmt.close();
 	}
-	
+
 	public List<Progetto> getUserProjects() throws SQLException {
 		if (con == null || con.isClosed())
 			return null;
@@ -38,7 +38,7 @@ public class ProgettoDao {
 		stmt.close();
 		return projectsList;
 	}
-	
+
 	public Progetto getProgettoFromId(int id) throws SQLException {
 		if (con == null || con.isClosed())
 			return null;
@@ -69,10 +69,12 @@ public class ProgettoDao {
 	public void delete() throws SQLException {
 		if (con == null || con.isClosed())
 			return;
+		SezioneDao sezioneDao=new SezioneDao();
+		sezioneDao.deleteFromProgetto(App.getCurrentProgetto().getId());
 		PreparedStatement stmt = con.prepareStatement("DELETE FROM Progetto WHERE Id = ?");
 		stmt.setInt(1, App.getCurrentProgetto().getId());
 		stmt.executeUpdate();
 		stmt.close();
 	}
-	
+
 }

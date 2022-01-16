@@ -74,7 +74,7 @@
                         <Separator prefHeight="11.0" prefWidth="730.0" BorderPane.alignment="CENTER" />
                      </bottom>
                      <right>
-                        <ProgressIndicator progress="0.0" BorderPane.alignment="CENTER">
+                        <ProgressIndicator progress="0.0" BorderPane.alignment="CENTER" fx:id="progressIndicator">
                            <BorderPane.margin>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </BorderPane.margin>
@@ -89,7 +89,7 @@
                         </SplitMenuButton>
                      </center>
                   </BorderPane>
-                  <ScrollPane layoutX="14.0" layoutY="79.0" prefHeight="623.0" prefViewportHeight="212.0" prefViewportWidth="404.0" prefWidth="706.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="79.0">
+                  <ScrollPane fx:id="scrollSezione" layoutX="14.0" layoutY="79.0" prefHeight="623.0" prefViewportHeight="212.0" prefViewportWidth="404.0" prefWidth="706.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="79.0">
                      <content>
                         <HBox fx:id="hboxSezione" layoutX="14.0" layoutY="79.0" spacing="35.0" AnchorPane.bottomAnchor="411.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="312.0" AnchorPane.topAnchor="79.0">
                            <padding>

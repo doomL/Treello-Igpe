@@ -1,8 +1,10 @@
 package util;
 
+import controller.HomePageController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TitledPane;
 import javafx.util.StringConverter;
 import model.Priorita;
 import model.Task;
@@ -13,12 +15,13 @@ import java.sql.SQLException;
 public class PriorityComboBox {
     private static TaskDao tDao = new TaskDao();
 
-    public static ComboBox<Priorita> comboBoxPriorita(Task task) {
+    public static ComboBox<Priorita> comboBoxPriorita(Task task, TitledPane tP) {
         ObservableList<Priorita> options = FXCollections.observableArrayList(
                 new Priorita("Bassa", -1), new Priorita("Normale", 0), new Priorita("Alta", 1), new Priorita("Massima", 2));
         ComboBox<Priorita> priorita = new ComboBox<Priorita>(options);
         priorita.valueProperty().addListener((obs, oldVal, newVal) ->
         {
+            HomePageController.setPrioriotaColor(newVal.getnPriorita(),tP);
             try {
                 tDao.updatePriorita(task.getId(), newVal.getnPriorita());
             } catch (SQLException e) {

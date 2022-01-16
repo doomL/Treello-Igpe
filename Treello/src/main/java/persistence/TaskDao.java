@@ -17,7 +17,7 @@ import model.Task;
 public class TaskDao {
 
 	Connection con=DbManager.con;
-	
+
 	public List<Task> getTaskSezioneFromId(String id) throws SQLException {
 		if (con == null || con.isClosed())
 			return null;
@@ -43,7 +43,7 @@ public class TaskDao {
 		LocalDateTime currentTime = LocalDateTime.now();
 		stmt.setString(3, dateF.format(currentTime));
 		stmt.executeUpdate();
-		
+
 		stmt.close();
 	}
 
@@ -80,6 +80,22 @@ public class TaskDao {
 		stmt.setInt(2, id);// 1 specifies the first parameter in the query
 		stmt.executeUpdate();
 		stmt.close();
-		
+
+	}
+	public void delete(int id) throws SQLException {
+		if (con == null || con.isClosed())
+			return;
+		PreparedStatement stmt = con.prepareStatement("DELETE FROM Task WHERE Id = ?");
+		stmt.setInt(1, id);
+		stmt.executeUpdate();
+		stmt.close();
+	}
+	public void deleteFromSezione(int idSezione) throws SQLException {
+		if (con == null || con.isClosed())
+			return;
+		PreparedStatement stmt = con.prepareStatement("DELETE FROM Task WHERE Sezione = ?");
+		stmt.setInt(1, idSezione);
+		stmt.executeUpdate();
+		stmt.close();
 	}
 }

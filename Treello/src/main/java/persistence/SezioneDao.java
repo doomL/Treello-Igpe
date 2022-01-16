@@ -12,7 +12,7 @@ import model.Progetto;
 import model.Sezione;
 
 public class SezioneDao {
-	
+
 	Connection con = DbManager.con;
 
 	public List<Sezione> getSezioniProgetto(String id) throws SQLException {
@@ -55,7 +55,30 @@ public class SezioneDao {
 	public void delete(int id) throws SQLException {
 		if (con == null || con.isClosed())
 			return;
+		TaskDao taskDao=new TaskDao();
+		taskDao.deleteFromSezione(id);
 		PreparedStatement stmt = con.prepareStatement("DELETE FROM Sezione WHERE Id = ?");
+		stmt.setInt(1, id);
+		stmt.executeUpdate();
+		stmt.close();
+	}
+
+    public void update(int idSezione,String s) throws SQLException {
+		if (con == null || con.isClosed())
+			return;
+		PreparedStatement stmt = con.prepareStatement("UPDATE Sezione SET Nome = ? WHERE Id = ?");
+		stmt.setString(1, s);// 1 specifies the first parameter in the query
+		stmt.setInt(2, idSezione);
+		stmt.executeUpdate();
+		stmt.close();
+    }
+
+	public void deleteFromProgetto(int id) throws SQLException {
+		if (con == null || con.isClosed())
+			return;
+		TaskDao taskDao=new TaskDao();
+		taskDao.deleteFromSezione(id);
+		PreparedStatement stmt = con.prepareStatement("DELETE FROM Sezione WHERE Progetto = ?");
 		stmt.setInt(1, id);
 		stmt.executeUpdate();
 		stmt.close();
